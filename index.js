@@ -65,6 +65,14 @@ async function run() {
       res.json(result);
     });
 
+    // Get all order
+    app.get("/order", async (req, res) => {
+      const result = await orderCollection.find({}).toArray();
+      res.json(result);
+    });
+
+    //-------------------------------------------------------------
+
     // Create User
     app.put("/users", async (req, res) => {
       const newUser = req.body;
@@ -88,9 +96,34 @@ async function run() {
         },
       };
       const result = await userCollection.updateOne(filter, updateDoc, options);
-      console.log(result);
-      // res.json(result);
       res.send(result);
+    });
+
+    // update order status
+    app.put("/order/:id", async (req, res) => {
+      const orderId = ObjectId(req.params.id);
+      const filter = { _id: orderId };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          status: "shipped",
+        },
+      };
+      const result = await orderCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+
+    //-------------------------------------------------------------
+
+    // Create Product
+    app.post("/bikes", async (req, res) => {
+      const newBike = req.body;
+      const result = await bikeCollection.insertOne(newBike);
+      res.json(result);
     });
 
     // Create Order
@@ -107,6 +140,8 @@ async function run() {
       res.json(result);
     });
 
+    //-------------------------------------------------------------
+
     // Delete user order
     app.delete("/order/:id", async (req, res) => {
       const orderId = ObjectId(req.params.id);
@@ -114,6 +149,16 @@ async function run() {
       const result = await orderCollection.deleteOne(query);
       res.json(result);
     });
+
+    // Delete product
+    app.delete("/bikes/:id", async (req, res) => {
+      const bikeId = ObjectId(req.params.id);
+      const query = { _id: bikeId };
+      const result = await bikeCollection.deleteOne(query);
+      res.json(result);
+    });
+
+    //-------------------------------------------------------------
   } finally {
     // await client.close()
   }
